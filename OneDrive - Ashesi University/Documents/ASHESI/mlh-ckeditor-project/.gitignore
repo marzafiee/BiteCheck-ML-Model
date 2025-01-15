@@ -1,1 +1,76 @@
-# Add .gitignore content here
+# Ignore system files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Ignore IDE/editor files
+.vscode/
+.idea/
+
+# Ignore log files
+*.log
+*.log.*
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Ignore Python-related files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore virtual environments
+venv/
+env/
+ENV/
+
+# Ignore Anaconda-related files
+*.conda/
+*.anaconda/
+
+# Ignore configuration files
+.git-credentials
+.gitconfig
+*.gitignore
+
+# Ignore build-related files
+*.class
+*.jar
+*.war
+*.ear
+
+# Ignore Maven build files
+target/
+*.iml
+
+# Ignore backup files
+*~
+*.bak
+
+# Ignore node_modules (if applicable)
+node_modules/
+
+# Ignore operating system specific directories
+*/Application Data/
+*/Cookies/
+*/Local Settings/
+*/My Documents/
+*/NetHood/
+*/PrintHood/
+*/Recent/
+*/SendTo/
+*/Start Menu/
+*/Templates/
+
+# Ignore personal directories
+Documents/
+Downloads/
+Favorites/
+Music/
+Videos/
+AppData/
+OneDrive/
+Google Drive/
