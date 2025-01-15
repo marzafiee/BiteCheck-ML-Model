@@ -2,6 +2,11 @@
 .DS_Store
 Thumbs.db
 ehthumbs.db
+.bash_history
+.cache/
+.conda/
+.gitconfig
+.git-credentials
 
 # Ignore IDE/editor files
 .vscode/
