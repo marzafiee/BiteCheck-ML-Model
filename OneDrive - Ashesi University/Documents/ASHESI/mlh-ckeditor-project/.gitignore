@@ -7,7 +7,16 @@ ehthumbs.db
 .conda/
 .gitconfig
 .git-credentials
-
+.ini
+.local/
+.npm/
+.npmrc
+.nvm/
+.ssh/
+.vagrant/
+.viminfo
+.vim/
+.vscode/
 # Ignore IDE/editor files
 .vscode/
 .idea/
@@ -15,6 +24,8 @@ ehthumbs.db
 # Ignore log files
 *.log
 *.log.*
+*.LOG1
+*.LOG2
 
 # Ignore temporary files
 *.tmp
