@@ -12,9 +12,7 @@
 6. [Dataset Information](#dataset-information)
 7. [Installation Guide](#installation-guide)
 8. [Usage Examples](#usage-examples)
-9. [Team Members](#team-members)
-10. [Ethical Considerations](#ethical-considerations)
-11. [License](#license)
+9. [Ethical Considerations](#ethical-considerations)
 
 ---
 
@@ -245,19 +243,6 @@ print(result)
 ```
 
 ---
-
-## Team Members
-
-**Group 12 - CS254_B: Introduction to Artificial Intelligence**
-- Eyra Inez Anne-Marie Agbenu (47152026)
-- PraiseGod Ukwuoma Osiagor (63962026)
-- Rose Carlene Mpawenayo (49262027)
-- Kelly Kethia Gacuti (32742027)
-
-**Instructor:** Dennis Asamoah Owusu
-
----
-
 ## Ethical Considerations
 
 While our project used a publicly available food dataset from Kaggle, we recognize several ethical considerations for real-world applications:
@@ -287,31 +272,3 @@ Throughout our work, we maintained proper attribution to the original Food-101 d
 2. Implement a continuous health score instead of binary classification
 3. Classify foods along multiple dimensions (multi-label approach)
 4. Combine predictions from multiple models for improved accuracy
-
----
-
-## License
-
-MIT License
-
-```text
-Copyright (c) 2025 Ashesi University CS254 Group 12
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
