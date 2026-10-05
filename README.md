@@ -1,22 +1,23 @@
 # BiteCheck: AI-Powered Food Classification & Health Assessment
-*Computer Vision Meets Nutritional Science for Healthier Food Choices*
+
+_Computer Vision Meets Nutritional Science for Healthier Food Choices_
 
 ---
 
 ## Table of Contents
-1. Project Overview
-2. Problem Statement
-3. Key Features
-4. Technical Architecture
-5. Model Performance
-6. Dataset Information
-7. Installation Guide
-8. Usage
-9. REST API
-10. Testing
-11. Project Structure
-12. Ethical Considerations
-13. Limitations and Future Improvements
+1. [Project Overview](#project-overview)
+2. [Problem Statement](#problem-statement)
+3. [Key Features](#key-features)
+4. [Technical Architecture](#technical-architecture)
+5. [Model Performance](#model-performance)
+6. [Dataset Information](#dataset-information)
+7. [Installation Guide](#installation-guide)
+8. [Usage Examples](#usage-examples)
+9. [REST API](#rest-api)
+10. [Testing](#testing)
+11. [Project Structure](#project-structure)
+12. [Ethical Considerations](#ethical-considerations)
+13. [Limitations and Future Improvements](#limitations-and-future-improvements)
 
 ---
 
@@ -50,22 +51,23 @@ BiteCheck solves this problem by providing an automated system that can classify
 
 ## Key Features
 
-| Feature | Description |
-|---------|-------------|
-| **Two-Stage Pipeline** | Combines CNN classification with health assessment mapping |
-| **Transfer Learning** | Fine-tuned ResNet50 with ~91% accuracy |
-| **Custom Augmentation** | Robust image transformations for better generalization |
-| **Explainable Output** | Confidence score + health rating for every prediction |
-| **Dictionary Mapping** | WHO/PubMed/HealthLine-backed nutritional rules |
-| **Focus on Local Foods** | Trained on 15 categories most common at Ashesi University |
-| **REST API** | FastAPI service with input validation and clear error codes |
-| **Automated Tests** | 31 pytest tests that run without TensorFlow or the model file |
+| Feature                  | Description                                                   |
+| ------------------------ | ------------------------------------------------------------- |
+| **Two-Stage Pipeline**   | Combines CNN classification with health assessment mapping    |
+| **Transfer Learning**    | Fine-tuned ResNet50 with ~91% accuracy                        |
+| **Custom Augmentation**  | Robust image transformations for better generalization        |
+| **Explainable Output**   | Confidence score + health rating for every prediction         |
+| **Dictionary Mapping**   | WHO/PubMed/HealthLine-backed nutritional rules                |
+| **Focus on Local Foods** | Trained on 15 categories most common at Ashesi University     |
+| **REST API**             | FastAPI service with input validation and clear error codes   |
+| **Automated Tests**      | 31 pytest tests that run without TensorFlow or the model file |
 
 ---
 
 ## Technical Architecture
 
 ### 1. Stage 1: Food Classification (ResNet50)
+
 ```
 Input Image (224x224 RGB) -> ResNet50 Backbone -> Global Average Pooling -> Dense Layer (128, ReLU) -> Dropout (0.2) -> 15-class Output with Softmax
 ```
@@ -85,6 +87,7 @@ model.compile(optimizer=SGD(learning_rate=0.0001, momentum=0.9), loss='categoric
 ```
 
 ### 2. Stage 2: Health Assessment (Dictionary-Based)
+
 ```python
 # Nutritional labeling dictionary
 nutri_dict = {
@@ -109,6 +112,7 @@ nutri_dict = {
 The dictionary classifier was chosen for its interpretability, implementation efficiency, flexibility, and lack of additional data requirements. It maps food classes to health categories based on nutritional guidelines from WHO and other credible health sources.
 
 ### 3. Stage 3: Serving (FastAPI)
+
 ```
 Client uploads photo -> POST /predict -> validate type and size -> preprocess (RGB, 224x224, /255) -> ResNet50 -> top class -> nutri_dict -> JSON response
 ```
@@ -120,21 +124,24 @@ Preprocessing in the API mirrors training exactly (RGB conversion, 224x224 neare
 ## Model Performance
 
 ### Food Classification Model
-| Metric | Value |
-|--------|-------|
-| Final Validation Accuracy | ~91% |
-| Training Accuracy | >92% |
-| Batch Size | 16 |
-| Epochs | 30 |
-| Optimizer | SGD (lr=0.0001, momentum=0.9) |
-| Regularization | Dropout (0.2) + L2 (λ=0.005) |
+
+| Metric                    | Value                         |
+| ------------------------- | ----------------------------- |
+| Final Validation Accuracy | ~91%                          |
+| Training Accuracy         | >92%                          |
+| Batch Size                | 16                            |
+| Epochs                    | 30                            |
+| Optimizer                 | SGD (lr=0.0001, momentum=0.9) |
+| Regularization            | Dropout (0.2) + L2 (λ=0.005)  |
 
 ### End-to-End Pipeline
+
 - **Stage 1 (Food Classification)**: ~91% accuracy
 - **Stage 2 (Health Classification)**: Deterministic mapping
 - **Overall System Performance**: ~91% accuracy
 
 ### Training Characteristics
+
 - Steady increase in both training and validation accuracy
 - Validation loss consistently lower than training loss, suggesting good generalization
 - Minimal overfitting observed
@@ -144,11 +151,13 @@ Preprocessing in the API mirrors training exactly (RGB conversion, 224x224 neare
 ## Dataset Information
 
 ### Data Source
+
 - Modified version of the **Food-101** dataset from Kaggle
 - Selected 15 food categories most common at Ashesi University: chicken_wings, chocolate_cake, donuts, french_fries, french_toast, fried_rice, hamburger, ice_cream, omelette, pancakes, pizza, pork_chop, samosa, spring_rolls, waffles
 - 1,000 images per category
 
 ### Preprocessing Steps
+
 1. **Directory Structuring and Splitting** (per class, using Food-101's official `train.txt` / `test.txt` lists):
    - Training (75%): 750 images per class, 11,250 total
    - Held-out (25%): 250 images per class, 3,750 total
@@ -178,6 +187,7 @@ test_datagen = ImageDataGenerator(rescale=1. / 255)
 ```
 
 ### Dataset Challenges
+
 - Varied image quality, lighting, angles, and resolution
 - Cluttered backgrounds in some images
 - Occasional distortions during preprocessing
@@ -187,11 +197,13 @@ test_datagen = ImageDataGenerator(rescale=1. / 255)
 ## Installation Guide
 
 ### Prerequisites
+
 - Python 3.11 or 3.12
 - NVIDIA GPU recommended for training (not needed for the API or tests)
 - 8GB RAM minimum
 
 ### Steps
+
 ```bash
 # Clone repository
 git clone https://github.com/marzafiee/BiteCheck-ML-Model.git
@@ -209,38 +221,35 @@ pip install -r requirements-api.txt   # API and tests
 ```
 
 ### Model file
+
 The trained model (`best_model_class.keras`) is not stored in this repository because of its size. Train it with the notebook, or place a copy in the repository root. To load it from somewhere else, set an environment variable:
 
 ```bash
 export BITECHECK_MODEL_PATH=/path/to/best_model_class.keras
 ```
 
----
-
-## Usage
+## Usage Examples
 
 ### Python
+
 ```python
 from api.predictor import Predictor
 
 predictor = Predictor("best_model_class.keras")
-with open("food_image.jpg", "rb") as f:
-    print(predictor.predict(f.read()))
-# {'food_class': 'pizza', 'confidence': 0.8841, 'health_rating': 'unhealthy'}
+with open("food_image.jpg", "rb") as image_file:
+   print(predictor.predict(image_file.read()))
 ```
 
----
-
-## REST API
+### REST API
 
 ```bash
 uvicorn api.main:app --reload
 # Interactive docs: http://127.0.0.1:8000/docs
 ```
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /health` | Service status and whether the model file was found |
+| Endpoint        | Description                                                                                   |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| `GET /health`   | Service status and whether the model file was found                                           |
 | `POST /predict` | Upload a food photo as form field `file`; returns `food_class`, `confidence`, `health_rating` |
 
 ```bash
@@ -248,14 +257,16 @@ curl -X POST -F "file=@food_image.jpg" http://127.0.0.1:8000/predict
 ```
 
 ### Error responses
-| Status | When |
-|--------|------|
-| 400 | Empty file, or the file is not a readable image |
-| 413 | Image larger than 5 MB |
-| 415 | Not a JPEG, PNG or WebP |
-| 503 | Model file is missing |
+
+| Status | When                                            |
+| ------ | ----------------------------------------------- |
+| 400    | Empty file, or the file is not a readable image |
+| 413    | Image larger than 5 MB                          |
+| 415    | Not a JPEG, PNG or WebP                         |
+| 503    | Model file is missing                           |
 
 ### Design notes
+
 - **Model loads on first request**, so the server starts quickly and tests never import TensorFlow. Tradeoff: the first prediction is slower. In production, load it at startup instead.
 - **The endpoint is a regular (sync) function.** Model inference is CPU-heavy, blocking work, so FastAPI runs it in a thread pool instead of blocking the event loop.
 - **Uploads are read up to the size limit only**, so a very large file cannot exhaust memory.
@@ -309,6 +320,7 @@ Throughout our work, we maintained proper attribution to the original Food-101 d
 ## Limitations and Future Improvements
 
 ### Current Limitations
+
 1. Not all possible food items are included in the dictionary
 2. Binary classification doesn't capture the spectrum of healthiness
 3. No consideration for portion size and preparation methods
@@ -318,6 +330,7 @@ Throughout our work, we maintained proper attribution to the original Food-101 d
 7. The training notebook uses absolute local paths; set `dataset_path` to your own location before running it
 
 ### Proposed Improvements
+
 1. Add more food items and regional cuisines to the dictionary
 2. Implement a continuous health score instead of binary classification
 3. Classify foods along multiple dimensions (multi-label approach)
