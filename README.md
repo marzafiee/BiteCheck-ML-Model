@@ -4,15 +4,19 @@
 ---
 
 ## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Problem Statement](#problem-statement)
-3. [Key Features](#key-features)
-4. [Technical Architecture](#technical-architecture)
-5. [Model Performance](#model-performance)
-6. [Dataset Information](#dataset-information)
-7. [Installation Guide](#installation-guide)
-8. [Usage Examples](#usage-examples)
-9. [Ethical Considerations](#ethical-considerations)
+1. Project Overview
+2. Problem Statement
+3. Key Features
+4. Technical Architecture
+5. Model Performance
+6. Dataset Information
+7. Installation Guide
+8. Usage
+9. REST API
+10. Testing
+11. Project Structure
+12. Ethical Considerations
+13. Limitations and Future Improvements
 
 ---
 
@@ -22,15 +26,15 @@
 
 1. **Classifies food images** using a fine-tuned ResNet50 deep learning model
 2. **Assesses nutritional value** through a rule-based mapping system based on WHO and other health guidelines
+3. **Serves predictions through a REST API** so other apps can send a photo and get a result back
 
 The project was developed to help Ashesi University students make better food decisions by providing immediate visual analysis of their meal options.
 
-```python
-# Example output
+```json
 {
   "food_class": "hamburger",
-  "health_rating": "Unhealthy",
-  }
+  "confidence": 0.9312,
+  "health_rating": "unhealthy"
 }
 ```
 
@@ -51,10 +55,11 @@ BiteCheck solves this problem by providing an automated system that can classify
 | **Two-Stage Pipeline** | Combines CNN classification with health assessment mapping |
 | **Transfer Learning** | Fine-tuned ResNet50 with ~91% accuracy |
 | **Custom Augmentation** | Robust image transformations for better generalization |
-| **Explainable AI** | Confidence scores + nutritional reasoning |
+| **Explainable Output** | Confidence score + health rating for every prediction |
 | **Dictionary Mapping** | WHO/PubMed/HealthLine-backed nutritional rules |
 | **Focus on Local Foods** | Trained on 15 categories most common at Ashesi University |
-| **Image Preprocessing** | Handles varied image quality, lighting, and angles |
+| **REST API** | FastAPI service with input validation and clear error codes |
+| **Automated Tests** | 31 pytest tests that run without TensorFlow or the model file |
 
 ---
 
@@ -62,7 +67,7 @@ BiteCheck solves this problem by providing an automated system that can classify
 
 ### 1. Stage 1: Food Classification (ResNet50)
 ```
-Input Image (224x224 RGB) → ResNet50 Backbone → Global Average Pooling → Dense Layer (128, ReLU) → Dropout (0.2) → 15-class Output with Softmax
+Input Image (224x224 RGB) -> ResNet50 Backbone -> Global Average Pooling -> Dense Layer (128, ReLU) -> Dropout (0.2) -> 15-class Output with Softmax
 ```
 
 The model was compiled using SGD optimizer with a learning rate of 0.0001 and momentum of 0.9. Training was conducted over 30 epochs with a batch size of 16.
@@ -103,6 +108,13 @@ nutri_dict = {
 
 The dictionary classifier was chosen for its interpretability, implementation efficiency, flexibility, and lack of additional data requirements. It maps food classes to health categories based on nutritional guidelines from WHO and other credible health sources.
 
+### 3. Stage 3: Serving (FastAPI)
+```
+Client uploads photo -> POST /predict -> validate type and size -> preprocess (RGB, 224x224, /255) -> ResNet50 -> top class -> nutri_dict -> JSON response
+```
+
+Preprocessing in the API mirrors training exactly (RGB conversion, 224x224 nearest-neighbour resize, rescale to [0, 1]). A mismatch here would silently give wrong predictions, so it is covered by tests.
+
 ---
 
 ## Model Performance
@@ -137,10 +149,10 @@ The dictionary classifier was chosen for its interpretability, implementation ef
 - 1,000 images per category
 
 ### Preprocessing Steps
-1. **Directory Structuring and Splitting**:
-   - Training (70%): 750 images per class
-   - Validation (15%): 250 images per class
-   - Testing (15%): 250 images per class
+1. **Directory Structuring and Splitting** (per class, using Food-101's official `train.txt` / `test.txt` lists):
+   - Training (75%): 750 images per class, 11,250 total
+   - Held-out (25%): 250 images per class, 3,750 total
+   - The held-out set was used for validation during training (including choosing the best checkpoint), so the ~91% figure is a validation accuracy, not a fully independent test score. A separate test split would give a less biased estimate.
 
 2. **Image Validation and Cleaning**:
    - Used Pillow library to identify and exclude corrupted files
@@ -175,74 +187,109 @@ test_datagen = ImageDataGenerator(rescale=1. / 255)
 ## Installation Guide
 
 ### Prerequisites
-- Python 3.11
-- NVIDIA GPU (Recommended)
+- Python 3.11 or 3.12
+- NVIDIA GPU recommended for training (not needed for the API or tests)
 - 8GB RAM minimum
 
 ### Steps
 ```bash
 # Clone repository
-git clone https://github.com/Marzafiee/BiteCheck-ML-Model.git
+git clone https://github.com/marzafiee/BiteCheck-ML-Model.git
+cd BiteCheck-ML-Model
 
-# Create virtual environment
-python -m venv bitecheck_env
-source bitecheck_env/bin/activate  # Linux/Mac
-# .\bitecheck_env\Scripts\activate  # Windows
+# Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate        # Linux/Mac
+# source .venv/Scripts/activate  # Windows (Git Bash)
+# .venv\Scripts\activate         # Windows (PowerShell)
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r requirements.txt       # training notebook
+pip install -r requirements-api.txt   # API and tests
 ```
 
----
+### Model file
+The trained model (`best_model_class.keras`) is not stored in this repository because of its size. Train it with the notebook, or place a copy in the repository root. To load it from somewhere else, set an environment variable:
 
-## Usage Examples
-
-### 1. Single Image Prediction
-```python
-from bitecheck import BiteCheckAnalyzer
-
-analyzer = BiteCheckAnalyzer()
-result = analyzer.predict("food_image.jpg")
-print(result)
-```
-
-### 2. Batch Processing
 ```bash
-python predict_batch.py --input_dir ./images --output results.csv
-```
-
-### 3. Prediction with Nutritional Labeling
-```python
-# Load the model
-model = load_model('best_model_class.keras', compile=False)
-
-# Function to predict class and nutritional label
-def predict_with_nutrition(model, image_path):
-    img = image.load_img(image_path, target_size=(224, 224))
-    img_array = image.img_to_array(img)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array /= 255.
-    
-    # Predict food class
-    pred = model.predict(img_array)
-    index = np.argmax(pred)
-    food_class = list(class_map.keys())[list(class_map.values()).index(index)]
-    
-    # Get nutritional label
-    health_rating = nutri_dict[food_class]
-    
-    return {
-        "food_class": food_class,
-        "confidence": float(pred[0][index]),
-        "health_rating": health_rating
-    }
-
-# Example usage
-result = predict_with_nutrition(model, "path/to/food/image.jpg")
-print(result)
+export BITECHECK_MODEL_PATH=/path/to/best_model_class.keras
 ```
 
 ---
+
+## Usage
+
+### Python
+```python
+from api.predictor import Predictor
+
+predictor = Predictor("best_model_class.keras")
+with open("food_image.jpg", "rb") as f:
+    print(predictor.predict(f.read()))
+# {'food_class': 'pizza', 'confidence': 0.8841, 'health_rating': 'unhealthy'}
+```
+
+---
+
+## REST API
+
+```bash
+uvicorn api.main:app --reload
+# Interactive docs: http://127.0.0.1:8000/docs
+```
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /health` | Service status and whether the model file was found |
+| `POST /predict` | Upload a food photo as form field `file`; returns `food_class`, `confidence`, `health_rating` |
+
+```bash
+curl -X POST -F "file=@food_image.jpg" http://127.0.0.1:8000/predict
+```
+
+### Error responses
+| Status | When |
+|--------|------|
+| 400 | Empty file, or the file is not a readable image |
+| 413 | Image larger than 5 MB |
+| 415 | Not a JPEG, PNG or WebP |
+| 503 | Model file is missing |
+
+### Design notes
+- **Model loads on first request**, so the server starts quickly and tests never import TensorFlow. Tradeoff: the first prediction is slower. In production, load it at startup instead.
+- **The endpoint is a regular (sync) function.** Model inference is CPU-heavy, blocking work, so FastAPI runs it in a thread pool instead of blocking the event loop.
+- **Uploads are read up to the size limit only**, so a very large file cannot exhaust memory.
+- **Paths are relative to the code**, not the folder you run it from, so it works on any machine.
+
+---
+
+## Testing
+
+```bash
+pytest -v
+```
+
+31 tests cover preprocessing (shape, value range, transparent/greyscale/palette images, corrupt files), the class-to-health-rating mapping for all 15 classes, and every API response code. A fake model replaces ResNet50 in tests, so they run in seconds without TensorFlow or the model file. They test the serving logic, not model accuracy.
+
+---
+
+## Project Structure
+
+```
+BiteCheck-ML-Model/
+├── BiteCheck_FoodClassifier.ipynb   # data prep, training, evaluation
+├── api/
+│   ├── predictor.py                 # preprocessing, model loading, health mapping
+│   └── main.py                      # FastAPI app: /health, /predict
+├── tests/
+│   └── test_api.py                  # pytest suite
+├── requirements.txt                 # training dependencies
+├── requirements-api.txt             # API and test dependencies
+└── pytest.ini
+```
+
+---
+
 ## Ethical Considerations
 
 While our project used a publicly available food dataset from Kaggle, we recognize several ethical considerations for real-world applications:
@@ -266,9 +313,14 @@ Throughout our work, we maintained proper attribution to the original Food-101 d
 2. Binary classification doesn't capture the spectrum of healthiness
 3. No consideration for portion size and preparation methods
 4. Potential cultural bias in health assessments
+5. The model always picks one of 15 classes, even for a photo that is not food
+6. No separate test set: the held-out split was also used to select the best checkpoint
+7. The training notebook uses absolute local paths; set `dataset_path` to your own location before running it
 
 ### Proposed Improvements
 1. Add more food items and regional cuisines to the dictionary
 2. Implement a continuous health score instead of binary classification
 3. Classify foods along multiple dimensions (multi-label approach)
 4. Combine predictions from multiple models for improved accuracy
+5. Return "unsure" below a confidence threshold instead of forcing a class
+6. Run the test suite automatically on every push with GitHub Actions
